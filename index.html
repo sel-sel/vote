@@ -3,148 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>共感戰場 - 投票區</title>
+    <title>情緒投票系統-六角排列版</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        body { 
-            font-family: 'Microsoft JhengHei', sans-serif; 
-            background-color: #1a1a1a; 
-            color: white; 
-            text-align: center; 
-            margin: 0; 
-            padding: 10px; 
-        }
-        h2 { color: #F1C40F; margin-top: 5px; margin-bottom: 15px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 10px; overflow-x: hidden; }
+        h2 { margin: 15px 0; font-size: 1.2rem; color: #F1C40F; }
         
-        /* 1. 情境顯示區塊 */
-        #scenario-display { 
-            background: #2c3e50; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin: 0 auto 15px auto; 
-            max-width: 450px; 
-            display: none; 
-            text-align: left; 
-            border-left: 6px solid #F1C40F; 
+        /* 六角形容器設定 */
+        .hexagon-container {
+            position: relative;
+            width: 340px;
+            height: 380px;
+            margin: 20px auto;
+            /* background: rgba(255,255,255,0.05); 可開啟此行觀察範圍 */
         }
-        #sd-role { font-size: 0.9em; margin-bottom: 8px; font-weight: bold; }
-        #sd-text { font-size: 1.1em; line-height: 1.4; color: #FFF; }
 
-        /* 2. 恢復原本乾淨的六角形圖片 */
-        #voting-map { 
-            width: 100%; 
-            max-width: 350px; 
-            margin: 0 auto 15px auto; 
+        .vote-card {
+            position: absolute;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
         }
-        #voting-map img { width: 100%; display: block; border-radius: 10px; }
-        
-        /* 3. 從 Python 傳過來的文字選項區塊 */
-        #options-display {
-            background: #222;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 450px;
-            margin: 0 auto 20px auto;
-        }
-        #options-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .option-box {
+
+        /* 依據你的 COORDS 邏輯進行相對位置排列 (順時針) */
+        /* 1號: 正上方 */
+        .pos1 { top: 0px; left: 120px; }
+        /* 2號: 右上方 */
+        .pos2 { top: 75px; left: 230px; }
+        /* 3號: 右下方 */
+        .pos3 { top: 225px; left: 230px; }
+        /* 4號: 正下方 */
+        .pos4 { bottom: 0px; left: 120px; }
+        /* 5號: 左下方 */
+        .pos5 { top: 225px; left: 10px; }
+        /* 6號: 左上方 */
+        .pos6 { top: 75px; left: 10px; }
+
+        .emotion-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%; /* 圓形頭像更像六角形佈局 */
+            border: 2px solid #444;
+            margin-bottom: 5px;
             background: #333;
-            padding: 8px 5px;
-            border-radius: 6px;
-            font-size: 0.95em;
         }
 
-        /* 投票按鈕區塊 */
-        .btn-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 12px; 
-            max-width: 400px; 
-            margin: auto; 
-        }
-        button {
-            padding: 15px; 
-            font-size: 18px; 
-            font-weight: bold; 
+        button { 
+            width: 60px;
+            height: 45px; 
+            font-size: 20px; 
             border: none; 
-            border-radius: 8px;
-            background-color: #2980b9; 
-            color: white; 
+            border-radius: 8px; 
             cursor: pointer; 
-            box-shadow: 0 4px #1f6391;
+            color: white; 
+            font-weight: bold; 
         }
-        button:active { box-shadow: 0 0 #1f6391; transform: translateY(4px); }
+        
+        button:active { transform: scale(0.9); }
+        button:disabled { background: #555 !important; color: #888; }
+        
+        .btn1 { background: #FF5252; } .btn2 { background: #FF9800; }
+        .btn3 { background: #F1C40F; color: black; } .btn4 { background: #4CAF50; }
+        .btn5 { background: #2196F3; } .btn6 { background: #9C27B0; }
+        
+        #msg { font-size: 18px; margin-top: 10px; height: 25px; font-weight: bold; clear: both; }
     </style>
 </head>
 <body>
-
-    <h2>🎭 共感戰場 - 學生端</h2>
+    <h2>請點選對應位置的情緒</h2>
     
-    <div id="scenario-display">
-        <div id="sd-role"></div>
-        <div id="sd-text">等待老師觸發情境...</div>
+    <div class="hexagon-container">
+        <div class="vote-card pos1"><img src="fig1.jpg" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button></div>
+        <div class="vote-card pos2"><img src="fig2.jpg" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button></div>
+        <div class="vote-card pos3"><img src="fig3.jpg" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button></div>
+        <div class="vote-card pos4"><img src="fig4.jpg" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button></div>
+        <div class="vote-card pos5"><img src="fig5.jpg" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button></div>
+        <div class="vote-card pos6"><img src="fig6.jpg" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button></div>
     </div>
 
-    <div id="voting-map">
-        <img src="hexagon_base.png" alt="六角形底圖">
-    </div>
-
-    <div id="options-display">
-        <div style="color: #F1C40F; font-weight: bold; font-size: 1.1em;">📊 目前對應選項與票數</div>
-        <div id="options-grid">
-            <div style="grid-column: span 3; color: #aaa;">等待老師抽籤...</div>
-        </div>
-    </div>
-
-    <div class="btn-grid">
-        <button onclick="vote('①')">投給 ①</button>
-        <button onclick="vote('②')">投給 ②</button>
-        <button onclick="vote('③')">投給 ③</button>
-        <button onclick="vote('④')">投給 ④</button>
-        <button onclick="vote('⑤')">投給 ⑤</button>
-        <button onclick="vote('⑥')">投給 ⑥</button>
-    </div>
+    <p id="msg"></p>
 
     <script>
-        const API_KEY = 'bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE';
-        const realtime = new Ably.Realtime(API_KEY);
-        const channel = realtime.channels.get('emotion-voting');
-
-        // 接收 Python 傳來的 6 個選項文字與票數
-        channel.subscribe('update_labels', (msg) => {
-            const dataList = msg.data.data;
-            const grid = document.getElementById('options-grid');
-            grid.innerHTML = ''; // 清空舊選項
-            
-            dataList.forEach(item => {
-                const box = document.createElement('div');
-                box.className = 'option-box';
-                box.innerHTML = `<span style="color: #00BFFF; font-weight: bold;">${item.label}</span><br>
-                                 <span style="font-weight: bold;">${item.emotion}</span><br>
-                                 <span style="color: #d32f2f; font-size: 0.9em;">(${item.count}票)</span>`;
-                grid.appendChild(box);
-            });
-        });
-
-        // 接收 Python 傳來的情境
-        channel.subscribe('sync_scenario', (msg) => {
-            const box = document.getElementById('scenario-display');
-            box.style.display = 'block'; 
-            box.style.borderLeftColor = msg.data.color; 
-            document.getElementById('sd-role').innerText = msg.data.role_intro;
-            document.getElementById('sd-role').style.color = msg.data.color;
-            document.getElementById('sd-text').innerText = msg.data.scenario_text;
-        });
+        const ABLY_KEY = 'PYZbg.h6MwRg:tCDDGL5lPEBQGvluW3NUmTkNtI2OPoVQuLk02msyWOI';
+        const ably = new Ably.Realtime(ABLY_KEY);
+        const channel = ably.channels.get('emotion-voting');
 
         function vote(choice) {
+            const msgEl = document.getElementById('msg');
+            const btns = document.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+            msgEl.innerText = "傳送中...";
+
             channel.publish('update', { choice: choice }, (err) => {
-                if (err) alert('投票失敗，請檢查網路');
-                else if (navigator.vibrate) navigator.vibrate(50);
+                if (err) {
+                    msgEl.innerText = "失敗";
+                    msgEl.style.color = "#FF5252";
+                    btns.forEach(b => b.disabled = false);
+                } else {
+                    msgEl.innerText = "✅ 成功投給 " + choice;
+                    msgEl.style.color = "#4CAF50";
+                    setTimeout(() => {
+                        btns.forEach(b => b.disabled = false);
+                        msgEl.innerText = "";
+                    }, 3000);
+                }
             });
         }
     </script>
