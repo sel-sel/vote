@@ -9,13 +9,11 @@
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 10px; overflow-x: hidden; }
         h2 { margin: 15px 0; font-size: 1.2rem; color: #F1C40F; }
         
-        /* 六角形容器設定 */
         .hexagon-container {
             position: relative;
             width: 340px;
             height: 380px;
             margin: 20px auto;
-            /* background: rgba(255,255,255,0.05); 可開啟此行觀察範圍 */
         }
 
         .vote-card {
@@ -24,31 +22,34 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 0.2s;
         }
 
-        /* 依據你的 COORDS 邏輯進行相對位置排列 (順時針) */
-        /* 1號: 正上方 */
+        /* 保留原本的座標位置 */
         .pos1 { top: 0px; left: 120px; }
-        /* 2號: 右上方 */
         .pos2 { top: 75px; left: 230px; }
-        /* 3號: 右下方 */
         .pos3 { top: 225px; left: 230px; }
-        /* 4號: 正下方 */
         .pos4 { bottom: 0px; left: 120px; }
-        /* 5號: 左下方 */
         .pos5 { top: 225px; left: 10px; }
-        /* 6號: 左上方 */
         .pos6 { top: 75px; left: 10px; }
 
         .emotion-img {
             width: 80px;
             height: 80px;
             object-fit: cover;
-            border-radius: 50%; /* 圓形頭像更像六角形佈局 */
+            border-radius: 50%;
             border: 2px solid #444;
             margin-bottom: 5px;
             background: #333;
+        }
+
+        /* 新增：專門放 Python 傳過來字樣的空間 */
+        .dynamic-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00BFFF;
+            margin-top: 5px;
+            height: 22px; /* 固定高度防止跳動 */
+            text-shadow: 1px 1px 2px black;
         }
 
         button { 
@@ -69,19 +70,19 @@
         .btn3 { background: #F1C40F; color: black; } .btn4 { background: #4CAF50; }
         .btn5 { background: #2196F3; } .btn6 { background: #9C27B0; }
         
-        #msg { font-size: 18px; margin-top: 10px; height: 25px; font-weight: bold; clear: both; }
+        #msg { font-size: 18px; margin-top: 10px; height: 25px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h2>請點選對應位置的情緒</h2>
+    <h2>請根據大螢幕情境投票</h2>
     
     <div class="hexagon-container">
-        <div class="vote-card pos1"><img src="fig1.jpg" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button></div>
-        <div class="vote-card pos2"><img src="fig2.jpg" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button></div>
-        <div class="vote-card pos3"><img src="fig3.jpg" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button></div>
-        <div class="vote-card pos4"><img src="fig4.jpg" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button></div>
-        <div class="vote-card pos5"><img src="fig5.jpg" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button></div>
-        <div class="vote-card pos6"><img src="fig6.jpg" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button></div>
+        <div class="vote-card pos1"><img src="fig1.jpg" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button><div id="t0" class="dynamic-text"></div></div>
+        <div class="vote-card pos2"><img src="fig2.jpg" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button><div id="t1" class="dynamic-text"></div></div>
+        <div class="vote-card pos3"><img src="fig3.jpg" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button><div id="t2" class="dynamic-text"></div></div>
+        <div class="vote-card pos4"><img src="fig4.jpg" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button><div id="t3" class="dynamic-text"></div></div>
+        <div class="vote-card pos5"><img src="fig5.jpg" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button><div id="t4" class="dynamic-text"></div></div>
+        <div class="vote-card pos6"><img src="fig6.jpg" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button><div id="t5" class="dynamic-text"></div></div>
     </div>
 
     <p id="msg"></p>
@@ -90,6 +91,15 @@
         const ABLY_KEY = 'bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE';
         const ably = new Ably.Realtime(ABLY_KEY);
         const channel = ably.channels.get('emotion-voting');
+
+        // 接收 Python 傳過來的情緒文字
+        channel.subscribe('update_labels', (msg) => {
+            const dataList = msg.data.data;
+            dataList.forEach(item => {
+                const el = document.getElementById(`t${item.index}`);
+                if (el) el.innerText = item.emotion;
+            });
+        });
 
         function vote(choice) {
             const msgEl = document.getElementById('msg');
@@ -108,7 +118,7 @@
                     setTimeout(() => {
                         btns.forEach(b => b.disabled = false);
                         msgEl.innerText = "";
-                    }, 3000);
+                    }, 2000);
                 }
             });
         }
