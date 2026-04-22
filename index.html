@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情緒投票系統-圖片按鈕版</title>
+    <title>情緒投票系統-組別版</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
         body { 
@@ -15,13 +15,39 @@
             padding: 10px; 
             overflow-x: hidden; 
         }
-        h2 { margin: 15px 0; font-size: 1.2rem; color: #F1C40F; }
+        h2 { margin: 10px 0; font-size: 1.1rem; color: #F1C40F; }
         
+        /* 組別選擇區 */
+        .group-selector {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .group-btn {
+            width: 50px;
+            height: 40px;
+            background: #333;
+            border: 2px solid #555;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .group-btn.active {
+            background: #F1C40F;
+            color: black;
+            border-color: #FFF;
+        }
+
         .hexagon-container {
             position: relative;
             width: 380px; 
             height: 460px; 
-            margin: 10px auto;
+            margin: 0 auto;
+            /* 預設沒選組別時稍微變暗 */
+            transition: opacity 0.3s;
         }
 
         .vote-card {
@@ -30,49 +56,43 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            cursor: pointer; /* 滑鼠移上去變成手指 */
+            cursor: pointer; 
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 座標位置 (維持 2,6 號調高) */
+        /* 鎖定狀態 */
+        .locked { opacity: 0.3; pointer-events: none; }
+
+        /* 座標位置 */
         .pos1 { top: 0px; left: 130px; }
-        .pos2 { top: 65px; left: 260px; }
-        .pos6 { top: 65px; left: 0px; }
-        .pos3 { top: 255px; left: 260px; }
-        .pos5 { top: 255px; left: 0px; }
+        .pos2 { top: 70px; left: 260px; }
+        .pos6 { top: 70px; left: 0px; }
+        .pos3 { top: 265px; left: 260px; }
+        .pos5 { top: 265px; left: 0px; }
         .pos4 { bottom: 10px; left: 130px; }
 
         .emotion-img {
-            width: 100px; /* 圖片變大一點點作為按鈕 */
+            width: 100px;
             height: 100px;
             object-fit: cover;
             border-radius: 50%;
-            border: 3px solid #444;
+            border: 4px solid #444;
             background: #333;
             box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-            transition: transform 0.1s, border-color 0.2s;
+            transition: transform 0.1s;
         }
 
-        /* 點擊圖片時的縮放效果 */
-        .vote-card:active .emotion-img {
-            transform: scale(0.9);
-            border-color: #F1C40F;
-        }
-
-        /* 停用狀態 (傳送中) */
-        .disabled {
-            pointer-events: none;
-            opacity: 0.6;
-        }
+        .vote-card:active .emotion-img { transform: scale(0.85); }
 
         .dynamic-text {
             font-size: 20px; 
             font-weight: bold;
             margin-top: 10px;
             height: 26px; 
-            text-shadow: 1px 1px 3px black;
+            text-shadow: 2px 2px 4px black;
         }
 
-        /* 各別文字顏色設定 */
+        /* 文字顏色設定 */
         #t0 { color: #A569BD; } /* 1. 紫色 */
         #t1 { color: #EC7063; } /* 2. 紅色 */
         #t2 { color: #85C1E9; } /* 3. 淡藍 */
@@ -81,18 +101,29 @@
         #t5 { color: #D4AC0D; } /* 6. 土色 */
         
         #msg { font-size: 18px; margin-top: 15px; height: 25px; font-weight: bold; }
+        .sending { color: #F1C40F; }
     </style>
 </head>
 <body>
-    <h2>請點選對應位置的情緒圖片</h2>
+    <h2>第一步：請先點選組別</h2>
+    <div class="group-selector">
+        <button class="group-btn" onclick="selectGroup(1, this)">1組</button>
+        <button class="group-btn" onclick="selectGroup(2, this)">2組</button>
+        <button class="group-btn" onclick="selectGroup(3, this)">3組</button>
+        <button class="group-btn" onclick="selectGroup(4, this)">4組</button>
+        <button class="group-btn" onclick="selectGroup(5, this)">5組</button>
+        <button class="group-btn" onclick="selectGroup(6, this)">6組</button>
+    </div>
+
+    <h2 id="step2-title" style="opacity: 0.5;">第二步：點擊圖片投票</h2>
     
-    <div class="hexagon-container" id="main-grid">
-        <div class="vote-card pos1" onclick="vote('①', this)"><img src="fig1.jpg" class="emotion-img"><div id="t0" class="dynamic-text"></div></div>
-        <div class="vote-card pos2" onclick="vote('②', this)"><img src="fig2.jpg" class="emotion-img"><div id="t1" class="dynamic-text"></div></div>
-        <div class="vote-card pos3" onclick="vote('③', this)"><img src="fig3.jpg" class="emotion-img"><div id="t2" class="dynamic-text"></div></div>
-        <div class="vote-card pos4" onclick="vote('④', this)"><img src="fig4.jpg" class="emotion-img"><div id="t3" class="dynamic-text"></div></div>
-        <div class="vote-card pos5" onclick="vote('⑤', this)"><img src="fig5.jpg" class="emotion-img"><div id="t4" class="dynamic-text"></div></div>
-        <div class="vote-card pos6" onclick="vote('⑥', this)"><img src="fig6.jpg" class="emotion-img"><div id="t5" class="dynamic-text"></div></div>
+    <div class="hexagon-container locked" id="main-grid">
+        <div class="vote-card pos1" onclick="vote('①')"><img src="fig1.jpg" class="emotion-img"><div id="t0" class="dynamic-text"></div></div>
+        <div class="vote-card pos2" onclick="vote('②')"><img src="fig2.jpg" class="emotion-img"><div id="t1" class="dynamic-text"></div></div>
+        <div class="vote-card pos3" onclick="vote('③')"><img src="fig3.jpg" class="emotion-img"><div id="t2" class="dynamic-text"></div></div>
+        <div class="vote-card pos4" onclick="vote('④')"><img src="fig4.jpg" class="emotion-img"><div id="t3" class="dynamic-text"></div></div>
+        <div class="vote-card pos5" onclick="vote('⑤')"><img src="fig5.jpg" class="emotion-img"><div id="t4" class="dynamic-text"></div></div>
+        <div class="vote-card pos6" onclick="vote('⑥')"><img src="fig6.jpg" class="emotion-img"><div id="t5" class="dynamic-text"></div></div>
     </div>
 
     <p id="msg"></p>
@@ -101,6 +132,22 @@
         const ABLY_KEY = 'bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE';
         const ably = new Ably.Realtime(ABLY_KEY);
         const channel = ably.channels.get('emotion-voting');
+        
+        let currentSelectedGroup = null;
+
+        // 選擇組別
+        function selectGroup(num, btn) {
+            currentSelectedGroup = num;
+            // 清除其他按鈕樣式
+            document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+            // 設定當前按鈕樣式
+            btn.classList.add('active');
+            // 解鎖圖片
+            document.getElementById('main-grid').classList.remove('locked');
+            document.getElementById('step2-title').style.opacity = "1";
+            document.getElementById('msg').innerText = "已選擇第 " + num + " 組，請點擊情緒";
+            document.getElementById('msg').style.color = "#FFF";
+        }
 
         channel.subscribe('update_labels', (msg) => {
             const dataList = msg.data.data;
@@ -110,25 +157,28 @@
             });
         });
 
-        function vote(choice, element) {
-            const msgEl = document.getElementById('msg');
-            const container = document.getElementById('main-grid');
-            
-            // 暫時鎖定畫面防止重複點擊
-            container.classList.add('disabled');
-            msgEl.innerText = "傳送中...";
+        function vote(choice) {
+            if (!currentSelectedGroup) return;
 
-            channel.publish('update', { choice: choice }, (err) => {
+            const msgEl = document.getElementById('msg');
+            const grid = document.getElementById('main-grid');
+            
+            grid.classList.add('locked');
+            msgEl.innerText = "第 " + currentSelectedGroup + " 組傳送中...";
+            msgEl.className = "sending";
+
+            // 注意：這裡我們依然傳送 choice 給 Python 統計票數
+            channel.publish('update', { choice: choice, group: currentSelectedGroup }, (err) => {
                 if (err) {
                     msgEl.innerText = "失敗，請重試";
                     msgEl.style.color = "#FF5252";
-                    container.classList.remove('disabled');
+                    grid.classList.remove('locked');
                 } else {
-                    msgEl.innerText = "✅ 投票成功";
+                    msgEl.innerText = "✅ 第 " + currentSelectedGroup + " 組已成功送出";
                     msgEl.style.color = "#4CAF50";
                     setTimeout(() => {
-                        container.classList.remove('disabled');
-                        msgEl.innerText = "";
+                        grid.classList.remove('locked');
+                        // 這裡可以決定是否要自動清除組別，目前設定是保留，方便同一組連續投
                     }, 2000);
                 }
             });
