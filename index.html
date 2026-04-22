@@ -27,11 +27,11 @@
         }
         .emotion-img {
             width: 100%;
-            aspect-ratio: 1 / 1; /* 保持正方形 */
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 10px;
             margin-bottom: 12px;
-            background: #333; /* 圖片載入前的底色 */
+            background: #333;
         }
         button { 
             width: 100%;
@@ -47,7 +47,6 @@
         button:active { transform: scale(0.95); }
         button:disabled { background: #555 !important; color: #888; cursor: not-allowed; }
         
-        /* 六種按鈕顏色 */
         .btn1 { background: #FF5252; } .btn2 { background: #FF9800; }
         .btn3 { background: #F1C40F; color: black; } .btn4 { background: #4CAF50; }
         .btn5 { background: #2196F3; } .btn6 { background: #9C27B0; }
@@ -58,12 +57,12 @@
 <body>
     <h2>請根據螢幕顯示選擇情緒</h2>
     <div class="grid">
-        <div class="vote-card"><img src="fig1.png" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button></div>
-        <div class="vote-card"><img src="fig2.png" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button></div>
-        <div class="vote-card"><img src="fig3.png" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button></div>
-        <div class="vote-card"><img src="fig4.png" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button></div>
-        <div class="vote-card"><img src="fig5.png" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button></div>
-        <div class="vote-card"><img src="fig6.png" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button></div>
+        <div class="vote-card"><img src="fig1.jpg" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button></div>
+        <div class="vote-card"><img src="fig2.jpg" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button></div>
+        <div class="vote-card"><img src="fig3.jpg" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button></div>
+        <div class="vote-card"><img src="fig4.jpg" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button></div>
+        <div class="vote-card"><img src="fig5.jpg" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button></div>
+        <div class="vote-card"><img src="fig6.jpg" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button></div>
     </div>
     <p id="msg"></p>
 
