@@ -16,12 +16,12 @@
         }
         h2 { color: #F1C40F; margin-top: 5px; margin-bottom: 15px; }
         
-        /* 情境顯示區塊 */
+        /* 1. 情境顯示區塊 */
         #scenario-display { 
             background: #2c3e50; 
             padding: 15px; 
             border-radius: 8px; 
-            margin: 0 auto 20px auto; 
+            margin: 0 auto 15px auto; 
             max-width: 450px; 
             display: none; 
             text-align: left; 
@@ -30,27 +30,33 @@
         #sd-role { font-size: 0.9em; margin-bottom: 8px; font-weight: bold; }
         #sd-text { font-size: 1.1em; line-height: 1.4; color: #FFF; }
 
-        /* 六角形地圖區塊 */
+        /* 2. 恢復原本乾淨的六角形圖片 */
         #voting-map { 
-            position: relative; 
             width: 100%; 
-            max-width: 400px; 
-            margin: 0 auto 20px auto; 
+            max-width: 350px; 
+            margin: 0 auto 15px auto; 
         }
-        #voting-map img { width: 100%; display: block; }
+        #voting-map img { width: 100%; display: block; border-radius: 10px; }
         
-        /* 浮動在圖案上的文字標籤 */
-        .emo-label {
-            position: absolute;
-            font-weight: 900;
-            color: #000;
-            text-align: center;
-            font-size: 16px;
-            /* 白色描邊讓文字在圖案上更清楚 */
-            text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            width: 100px;
+        /* 3. 從 Python 傳過來的文字選項區塊 */
+        #options-display {
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 450px;
+            margin: 0 auto 20px auto;
+        }
+        #options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .option-box {
+            background: #333;
+            padding: 8px 5px;
+            border-radius: 6px;
+            font-size: 0.95em;
         }
 
         /* 投票按鈕區塊 */
@@ -72,10 +78,7 @@
             cursor: pointer; 
             box-shadow: 0 4px #1f6391;
         }
-        button:active { 
-            box-shadow: 0 0 #1f6391; 
-            transform: translateY(4px); 
-        }
+        button:active { box-shadow: 0 0 #1f6391; transform: translateY(4px); }
     </style>
 </head>
 <body>
@@ -88,14 +91,14 @@
     </div>
 
     <div id="voting-map">
-        <img src="hexagon_base.png" alt="六角形">
-        
-        <div id="label-0" class="emo-label" style="top: 15%; left: 50%;"></div>
-        <div id="label-1" class="emo-label" style="top: 35%; left: 82%;"></div>
-        <div id="label-2" class="emo-label" style="top: 65%; left: 82%;"></div>
-        <div id="label-3" class="emo-label" style="top: 85%; left: 50%;"></div>
-        <div id="label-4" class="emo-label" style="top: 65%; left: 18%;"></div>
-        <div id="label-5" class="emo-label" style="top: 35%; left: 18%;"></div>
+        <img src="hexagon_base.png" alt="六角形底圖">
+    </div>
+
+    <div id="options-display">
+        <div style="color: #F1C40F; font-weight: bold; font-size: 1.1em;">📊 目前對應選項與票數</div>
+        <div id="options-grid">
+            <div style="grid-column: span 3; color: #aaa;">等待老師抽籤...</div>
+        </div>
     </div>
 
     <div class="btn-grid">
@@ -108,43 +111,40 @@
     </div>
 
     <script>
-        // 設定相同的 Ably Key
         const API_KEY = 'bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE';
         const realtime = new Ably.Realtime(API_KEY);
         const channel = realtime.channels.get('emotion-voting');
 
-        // 監聽 1：當老師端「抽籤」或「有人投票」時，更新圖片上的文字
+        // 接收 Python 傳來的 6 個選項文字與票數
         channel.subscribe('update_labels', (msg) => {
             const dataList = msg.data.data;
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = ''; // 清空舊選項
+            
             dataList.forEach(item => {
-                const el = document.getElementById(`label-${item.index}`);
-                if (el) {
-                    // 把情緒跟票數塞進透明方塊裡
-                    el.innerHTML = `${item.label}<br>${item.emotion}<br><span style="font-size: 0.85em; color: #d32f2f;">(${item.count}票)</span>`;
-                }
+                const box = document.createElement('div');
+                box.className = 'option-box';
+                box.innerHTML = `<span style="color: #00BFFF; font-weight: bold;">${item.label}</span><br>
+                                 <span style="font-weight: bold;">${item.emotion}</span><br>
+                                 <span style="color: #d32f2f; font-size: 0.9em;">(${item.count}票)</span>`;
+                grid.appendChild(box);
             });
         });
 
-        // 監聽 2：當老師點選「角色」時，秀出當前情境對話
+        // 接收 Python 傳來的情境
         channel.subscribe('sync_scenario', (msg) => {
             const box = document.getElementById('scenario-display');
-            box.style.display = 'block'; // 顯示原本隱藏的方塊
-            box.style.borderLeftColor = msg.data.color; // 配合角色顏色
-            
+            box.style.display = 'block'; 
+            box.style.borderLeftColor = msg.data.color; 
             document.getElementById('sd-role').innerText = msg.data.role_intro;
             document.getElementById('sd-role').style.color = msg.data.color;
             document.getElementById('sd-text').innerText = msg.data.scenario_text;
         });
 
-        // 學生點擊按鈕，發送投票訊號給老師
         function vote(choice) {
             channel.publish('update', { choice: choice }, (err) => {
-                if (err) {
-                    alert('投票失敗，請檢查網路');
-                } else {
-                    // 手機震動回饋 (部分手機支援)
-                    if (navigator.vibrate) navigator.vibrate(50);
-                }
+                if (err) alert('投票失敗，請檢查網路');
+                else if (navigator.vibrate) navigator.vibrate(50);
             });
         }
     </script>
