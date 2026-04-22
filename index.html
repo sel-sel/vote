@@ -154,7 +154,7 @@
             document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             checkReady();
-            document.getElementById('msg').innerHTML = "你是 <span class='highlight'>" + num + " 隊</span><br>請點擊圖片選擇情緒";
+            document.getElementById('msg').innerHTML = "你是 <span class='highlight'>" + num + " 隊</span><br>等待文字傳送，再請點擊選擇圖片情緒";
         }
 
         channel.subscribe('update_labels', (msg) => {
