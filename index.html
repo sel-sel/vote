@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情緒投票系統-確認版</title>
+    <title>情緒投票系統-教學正式版</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
         body { 
@@ -14,11 +14,11 @@
             margin: 0; 
             padding: 10px; 
             overflow-x: hidden;
-            /* 防止手機縮放與選取文字 */
             user-select: none;
         }
         h2 { margin: 10px 0; font-size: 1.1rem; color: #F1C40F; }
         
+        /* 隊別選擇區 */
         .group-selector {
             display: flex;
             justify-content: center;
@@ -27,22 +27,22 @@
             flex-wrap: wrap;
         }
         .group-btn {
-            width: 60px; /* 稍微加寬，讓字體排版更好看 */
+            width: 60px;
             height: 40px;
             background: #333;
             border: 1px solid #555;
             color: white;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-weight: bold;
         }
         .group-btn.active {
             background: #F1C40F;
             color: black;
             border-color: #FFF;
-            font-weight: bold;
         }
 
+        /* 圖片容器 */
         .hexagon-container {
             position: relative;
             width: 320px; 
@@ -59,12 +59,13 @@
             cursor: pointer; 
             -webkit-tap-highlight-color: transparent;
             pointer-events: none; 
-            opacity: 0.15; /* 沒解鎖時更暗一點，提示更明顯 */
+            opacity: 0.15;
             transition: all 0.3s ease;
         }
 
         .vote-card.ready { pointer-events: auto; opacity: 1; }
 
+        /* 緊湊座標 */
         .pos1 { top: 0px; left: 110px; }
         .pos2 { top: 60px; left: 215px; }
         .pos6 { top: 60px; left: 5px; }
@@ -84,7 +85,7 @@
 
         .vote-card.selected .emotion-img {
             border-color: #FFF;
-            transform: scale(1.15); /* 選中時稍微大一點 */
+            transform: scale(1.15);
             box-shadow: 0 0 15px #F1C40F;
         }
 
@@ -96,10 +97,11 @@
             text-shadow: 2px 2px 4px black;
         }
 
-        /* 文字顏色設定 */
+        /* 指定文字顏色 */
         #t0 { color: #A569BD; } #t1 { color: #EC7063; } #t2 { color: #85C1E9; } 
         #t3 { color: #52BE80; } #t4 { color: #F5B7B1; } #t5 { color: #D4AC0D; } 
         
+        /* 確定送出按鈕 */
         #submit-btn {
             margin: 20px auto;
             padding: 12px 50px;
@@ -112,11 +114,6 @@
             cursor: pointer;
             display: none; 
             box-shadow: 0 6px 0 #196F3D;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
         #submit-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #196F3D; }
 
@@ -148,25 +145,30 @@
     <p id="msg"></p>
 
     <script>
+        // 設定 Ably
         const ABLY_KEY = 'bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE';
         const ably = new Ably.Realtime(ABLY_KEY);
         const channel = ably.channels.get('emotion-voting');
         
-        let currentGroup = null;
-        let currentChoice = null; 
-        let currentEmotionText = ""; 
-        let hasEmotions = false;
+        let currentGroup = null;      // 存隊別 (1~6)
+        let currentChoice = null;     // 存圖號 (①~⑥)
+        let currentEmotionText = "";  // 存中文情緒詞
+        let hasEmotions = false;      // 判斷 Python 文字是否到達
 
+        // 1. 選隊別
         function selectGroup(num, btn) {
             currentGroup = num;
             document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            checkReady();
+            
             const msgEl = document.getElementById('msg');
-            msgEl.style.color = "white"; // 重置文字顏色
-            msgEl.innerHTML = "你是 <span class='highlight'>第 " + num + " 隊</span><br>" + (hasEmotions ? "請點擊圖片選擇情緒" : "等待老師出題中...");
+            msgEl.style.color = "white";
+            msgEl.innerHTML = "你是 <span class='highlight'>第 " + num + " 隊</span><br>" + 
+                              (hasEmotions ? "請點擊圖片選擇情緒" : "等待老師出題中...");
+            checkReady();
         }
 
+        // 接收 Python 更新文字 (出口：update_labels)
         channel.subscribe('update_labels', (msg) => {
             const dataList = msg.data.data;
             hasEmotions = true; 
@@ -175,7 +177,7 @@
                 if (el) el.innerText = item.emotion;
             });
 
-            // 老師出題時，重置所有狀態
+            // 抽題時重置學生端選擇狀態
             currentChoice = null;
             currentEmotionText = "";
             document.querySelectorAll('.vote-card').forEach(v => v.classList.remove('selected'));
@@ -183,18 +185,20 @@
             
             const msgEl = document.getElementById('msg');
             msgEl.style.color = "white";
-            msgEl.innerText = "新題目已送達！請點擊圖片投票";
+            msgEl.innerText = "新題目已更新！請選擇圖片";
             
             checkReady(); 
         });
 
+        // 檢查解鎖條件
         function checkReady() {
             if (currentGroup && hasEmotions) {
                 document.querySelectorAll('.vote-card').forEach(card => card.classList.add('ready'));
-                document.getElementById('main-hint').innerText = "2. 請點擊情緒圖片並送出";
+                document.getElementById('main-hint').innerText = "2. 請點擊情緒圖片並確定送出";
             }
         }
 
+        // 2. 選擇圖片
         function selectEmotion(choice, element) {
             currentChoice = choice;
             currentEmotionText = element.querySelector('.dynamic-text').innerText;
@@ -208,17 +212,25 @@
             msgEl.innerHTML = "第 <span class='highlight'>" + currentGroup + " 隊</span> 選擇：<span class='highlight'>" + currentEmotionText + "</span>";
         }
 
+        // 3. 確定送出 (出口：將資料包傳回 Python)
         function finalSubmit() {
             const msgEl = document.getElementById('msg');
             const subBtn = document.getElementById('submit-btn');
             subBtn.disabled = true;
             
+            // 這就是你要傳回給 Python 的完整資料包
+            const payload = {
+                group: currentGroup,
+                choice: currentChoice,
+                emotion: currentEmotionText
+            };
+
             msgEl.style.color = "white";
             msgEl.innerHTML = "第 " + currentGroup + " 隊「" + currentEmotionText + "」<br>正在傳送...";
 
-            channel.publish('update', { choice: currentChoice, group: currentGroup, emotion: currentEmotionText }, (err) => {
+            channel.publish('update', payload, (err) => {
                 if (err) {
-                    msgEl.innerText = "❌ 傳送失敗，請重試";
+                    msgEl.innerText = "❌ 傳送失敗，請檢查網路";
                     msgEl.style.color = "#FF5252";
                     subBtn.disabled = false;
                 } else {
@@ -227,7 +239,7 @@
                     subBtn.style.display = "none";
                     subBtn.disabled = false;
                     
-                    // 投票後鎖定，直到下一輪
+                    // 投票後鎖定，等待下一輪文字更新
                     document.querySelectorAll('.vote-card').forEach(v => v.classList.remove('ready'));
                     hasEmotions = false; 
                 }
