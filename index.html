@@ -119,12 +119,12 @@
 <body>
     <h2 id="main-hint">1. 請先點選組別</h2>
     <div class="group-selector">
-        <button class="group-btn" onclick="selectGroup(1, this)">1組</button>
-        <button class="group-btn" onclick="selectGroup(2, this)">2組</button>
-        <button class="group-btn" onclick="selectGroup(3, this)">3組</button>
-        <button class="group-btn" onclick="selectGroup(4, this)">4組</button>
-        <button class="group-btn" onclick="selectGroup(5, this)">5組</button>
-        <button class="group-btn" onclick="selectGroup(6, this)">6組</button>
+        <button class="group-btn" onclick="selectGroup(1, this)">1隊</button>
+        <button class="group-btn" onclick="selectGroup(2, this)">2隊</button>
+        <button class="group-btn" onclick="selectGroup(3, this)">3隊</button>
+        <button class="group-btn" onclick="selectGroup(4, this)">4隊</button>
+        <button class="group-btn" onclick="selectGroup(5, this)">5隊</button>
+        <button class="group-btn" onclick="selectGroup(6, this)">6隊</button>
     </div>
 
     <div class="hexagon-container" id="main-grid">
@@ -154,7 +154,7 @@
             document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             checkReady();
-            document.getElementById('msg').innerHTML = "已選 <span class='highlight'>" + num + " 組</span><br>請點擊圖片選擇情緒";
+            document.getElementById('msg').innerHTML = "你是 <span class='highlight'>" + num + " 隊</span><br>請點擊圖片選擇情緒";
         }
 
         channel.subscribe('update_labels', (msg) => {
@@ -190,7 +190,7 @@
             
             // 顯示確定按鈕，並更新提示文字
             document.getElementById('submit-btn').style.display = "block";
-            document.getElementById('msg').innerHTML = "第 <span class='highlight'>" + currentGroup + " 組</span> 選擇：<span class='highlight'>" + currentEmotionText + "</span>";
+            document.getElementById('msg').innerHTML = "第 <span class='highlight'>" + currentGroup + " 隊</span> 選擇：<span class='highlight'>" + currentEmotionText + "</span>";
         }
 
         function finalSubmit() {
@@ -198,7 +198,7 @@
             const subBtn = document.getElementById('submit-btn');
             subBtn.disabled = true;
             
-            msgEl.innerHTML = "第 " + currentGroup + " 組「" + currentEmotionText + "」<br>傳送中...";
+            msgEl.innerHTML = "第 " + currentGroup + " 隊「" + currentEmotionText + "」<br>傳送中...";
 
             channel.publish('update', { choice: currentChoice, group: currentGroup, emotion: currentEmotionText }, (err) => {
                 if (err) {
@@ -206,7 +206,7 @@
                     msgEl.style.color = "#FF5252";
                     subBtn.disabled = false;
                 } else {
-                    msgEl.innerHTML = "✅ 第 <span class='highlight'>" + currentGroup + " 組</span><br>「<span class='highlight'>" + currentEmotionText + "</span>」已送出！";
+                    msgEl.innerHTML = "✅ 第 <span class='highlight'>" + currentGroup + " 隊</span><br>「<span class='highlight'>" + currentEmotionText + "</span>」已送出！";
                     msgEl.style.color = "#4CAF50";
                     subBtn.style.display = "none";
                     subBtn.disabled = false;
