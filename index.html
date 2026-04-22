@@ -17,54 +17,56 @@
         }
         h2 { margin: 15px 0; font-size: 1.2rem; color: #F1C40F; }
         
-        /* 1. 放大容器尺寸，提供拉開間距的空間 */
         .hexagon-container {
             position: relative;
-            width: 380px;  /* 從 340px 放大 */
-            height: 440px; /* 從 380px 放大 */
-            margin: 30px auto; /* 增加上下邊距 */
+            width: 380px; 
+            height: 460px; /* 稍微增加總高度空間 */
+            margin: 10px auto;
         }
 
         .vote-card {
             position: absolute;
-            width: 110px; /* 稍微加大一點點卡片寬度 */
+            width: 110px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* 2. 重新計算並拉開六角形座標 (順時針) */
-        /* 1號: 正上方 (向下移一點) */
+        /* --- 座標微調區 --- */
+        
+        /* 1號: 正上方不變 */
         .pos1 { top: 0px; left: 135px; }
         
-        /* 2號: 右上方 (往右上移) */
-        .pos2 { top: 80px; left: 265px; }
+        /* 2號: 右上方 (從 80px 改為 65px，往上提升) */
+        .pos2 { top: 65px; left: 265px; }
         
-        /* 3號: 右下方 (往右下移) */
-        .pos3 { top: 260px; left: 265px; }
+        /* 6號: 左上方 (從 80px 改為 65px，往上提升) */
+        .pos6 { top: 65px; left: 5px; }
         
-        /* 4號: 正下方 (向上移一點) */
-        .pos4 { bottom: 0px; left: 135px; }
+        /* 3號: 右下方 (稍微配合調高一點點，從 260px 改為 255px) */
+        .pos3 { top: 255px; left: 265px; }
         
-        /* 5號: 左下方 (往左下移) */
-        .pos5 { top: 260px; left: 5px; }
+        /* 5號: 左下方 (稍微配合調高一點點，從 260px 改為 255px) */
+        .pos5 { top: 255px; left: 5px; }
         
-        /* 6號: 左上方 (往左上移) */
-        .pos6 { top: 80px; left: 5px; }
+        /* 4號: 正下方 */
+        .pos4 { bottom: 10px; left: 135px; }
+
+        /* --- 元件樣式 --- */
 
         .emotion-img {
-            width: 85px; /* 圖片稍微放大一點點 */
+            width: 85px;
             height: 85px;
             object-fit: cover;
             border-radius: 50%;
             border: 2px solid #444;
-            margin-bottom: 8px; /* 圖片與按鈕間距 */
+            margin-bottom: 8px;
             background: #333;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* 增加陰影提升立體感 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .dynamic-text {
-            font-size: 16px;
+            font-size: 17px; /* 稍微加粗放大字體 */
             font-weight: bold;
             color: #00BFFF;
             margin-top: 5px;
@@ -73,7 +75,7 @@
         }
 
         button { 
-            width: 65px; /* 按鈕稍微加大 */
+            width: 65px;
             height: 48px; 
             font-size: 20px; 
             border: none; 
@@ -81,12 +83,12 @@
             cursor: pointer; 
             color: white; 
             font-weight: bold; 
-            box-shadow: 0 4px #999; /* 增加按鈕陰影 */
+            box-shadow: 0 4px #666;
         }
         
         button:active { 
             transform: scale(0.95); 
-            box-shadow: 0 2px #666; /* 按下時陰影變小 */
+            box-shadow: 0 2px #444;
         }
         
         button:disabled { background: #555 !important; color: #888; box-shadow: none; }
@@ -117,7 +119,6 @@
         const ably = new Ably.Realtime(ABLY_KEY);
         const channel = ably.channels.get('emotion-voting');
 
-        // 接收 Python 傳過來的情緒文字
         channel.subscribe('update_labels', (msg) => {
             const dataList = msg.data.data;
             dataList.forEach(item => {
