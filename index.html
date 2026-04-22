@@ -3,67 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情緒投票系統</title>
+    <title>情緒投票系統-六角排列版</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 10px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 10px; overflow-x: hidden; }
         h2 { margin: 15px 0; font-size: 1.2rem; color: #F1C40F; }
-        .grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            padding: 10px; 
-            max-width: 500px; 
-            margin: 0 auto; 
+        
+        /* 六角形容器設定 */
+        .hexagon-container {
+            position: relative;
+            width: 340px;
+            height: 380px;
+            margin: 20px auto;
+            /* background: rgba(255,255,255,0.05); 可開啟此行觀察範圍 */
         }
+
         .vote-card {
-            background: #2a2a2a;
-            border-radius: 15px;
-            padding: 12px;
+            position: absolute;
+            width: 100px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
+
+        /* 依據你的 COORDS 邏輯進行相對位置排列 (順時針) */
+        /* 1號: 正上方 */
+        .pos1 { top: 0px; left: 120px; }
+        /* 2號: 右上方 */
+        .pos2 { top: 75px; left: 230px; }
+        /* 3號: 右下方 */
+        .pos3 { top: 225px; left: 230px; }
+        /* 4號: 正下方 */
+        .pos4 { bottom: 0px; left: 120px; }
+        /* 5號: 左下方 */
+        .pos5 { top: 225px; left: 10px; }
+        /* 6號: 左上方 */
+        .pos6 { top: 75px; left: 10px; }
+
         .emotion-img {
-            width: 100%;
-            aspect-ratio: 1 / 1;
+            width: 80px;
+            height: 80px;
             object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 12px;
+            border-radius: 50%; /* 圓形頭像更像六角形佈局 */
+            border: 2px solid #444;
+            margin-bottom: 5px;
             background: #333;
         }
+
         button { 
-            width: 100%;
-            height: 55px; 
-            font-size: 24px; 
+            width: 60px;
+            height: 45px; 
+            font-size: 20px; 
             border: none; 
-            border-radius: 10px; 
+            border-radius: 8px; 
             cursor: pointer; 
             color: white; 
             font-weight: bold; 
-            transition: transform 0.1s;
         }
-        button:active { transform: scale(0.95); }
-        button:disabled { background: #555 !important; color: #888; cursor: not-allowed; }
+        
+        button:active { transform: scale(0.9); }
+        button:disabled { background: #555 !important; color: #888; }
         
         .btn1 { background: #FF5252; } .btn2 { background: #FF9800; }
         .btn3 { background: #F1C40F; color: black; } .btn4 { background: #4CAF50; }
         .btn5 { background: #2196F3; } .btn6 { background: #9C27B0; }
         
-        #msg { font-size: 18px; margin-top: 15px; height: 25px; font-weight: bold; }
+        #msg { font-size: 18px; margin-top: 10px; height: 25px; font-weight: bold; clear: both; }
     </style>
 </head>
 <body>
-    <h2>請根據螢幕顯示選擇情緒</h2>
-    <div class="grid">
-        <div class="vote-card"><img src="fig1.jpg" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button></div>
-        <div class="vote-card"><img src="fig2.jpg" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button></div>
-        <div class="vote-card"><img src="fig3.jpg" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button></div>
-        <div class="vote-card"><img src="fig4.jpg" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button></div>
-        <div class="vote-card"><img src="fig5.jpg" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button></div>
-        <div class="vote-card"><img src="fig6.jpg" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button></div>
+    <h2>請點選對應位置的情緒</h2>
+    
+    <div class="hexagon-container">
+        <div class="vote-card pos1"><img src="fig1.jpg" class="emotion-img"><button class="btn1" onclick="vote('①')">①</button></div>
+        <div class="vote-card pos2"><img src="fig2.jpg" class="emotion-img"><button class="btn2" onclick="vote('②')">②</button></div>
+        <div class="vote-card pos3"><img src="fig3.jpg" class="emotion-img"><button class="btn3" onclick="vote('③')">③</button></div>
+        <div class="vote-card pos4"><img src="fig4.jpg" class="emotion-img"><button class="btn4" onclick="vote('④')">④</button></div>
+        <div class="vote-card pos5"><img src="fig5.jpg" class="emotion-img"><button class="btn5" onclick="vote('⑤')">⑤</button></div>
+        <div class="vote-card pos6"><img src="fig6.jpg" class="emotion-img"><button class="btn6" onclick="vote('⑥')">⑥</button></div>
     </div>
+
     <p id="msg"></p>
 
     <script>
@@ -76,11 +96,10 @@
             const btns = document.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
             msgEl.innerText = "傳送中...";
-            msgEl.style.color = "#F1C40F";
 
             channel.publish('update', { choice: choice }, (err) => {
                 if (err) {
-                    msgEl.innerText = "傳送失敗";
+                    msgEl.innerText = "失敗";
                     msgEl.style.color = "#FF5252";
                     btns.forEach(b => b.disabled = false);
                 } else {
