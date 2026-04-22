@@ -92,12 +92,15 @@
         const ably = new Ably.Realtime(ABLY_KEY);
         const channel = ably.channels.get('emotion-voting');
 
-        // 接收 Python 傳過來的情緒文字
+   // 接收 Python 傳過來的情緒文字 (只要老師一抽籤，這裡就會動作)
         channel.subscribe('update_labels', (msg) => {
             const dataList = msg.data.data;
             dataList.forEach(item => {
                 const el = document.getElementById(`t${item.index}`);
-                if (el) el.innerText = item.emotion;
+                if (el) {
+                    el.innerText = item.emotion; // 填入文字
+                    el.style.opacity = "1";     // 確保文字是顯示狀態
+                }
             });
         });
 
