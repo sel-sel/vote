@@ -6,117 +6,23 @@
     <title>情緒投票系統-教學正式版</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        body { 
-            font-family: "Microsoft JhengHei", sans-serif; 
-            text-align: center; 
-            background: #1a1a1a; 
-            color: white; 
-            margin: 0; 
-            padding: 10px; 
-            overflow-x: hidden;
-            user-select: none;
-        }
+        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 10px; overflow-x: hidden; user-select: none; }
         h2 { margin: 10px 0; font-size: 1.1rem; color: #F1C40F; }
-        
-        /* 隊別選擇區 */
-        .group-selector {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .group-btn {
-            width: 60px;
-            height: 40px;
-            background: #333;
-            border: 1px solid #555;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .group-btn.active {
-            background: #F1C40F;
-            color: black;
-            border-color: #FFF;
-        }
-
-        /* 圖片容器 */
-        .hexagon-container {
-            position: relative;
-            width: 320px; 
-            height: 400px; 
-            margin: 0 auto;
-        }
-
-        .vote-card {
-            position: absolute;
-            width: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer; 
-            -webkit-tap-highlight-color: transparent;
-            pointer-events: none; 
-            opacity: 0.15;
-            transition: all 0.3s ease;
-        }
-
+        .group-selector { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .group-btn { width: 65px; height: 40px; background: #333; border: 1px solid #555; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .group-btn.active { background: #F1C40F; color: black; border-color: #FFF; }
+        .hexagon-container { position: relative; width: 320px; height: 380px; margin: 0 auto; }
+        .vote-card { position: absolute; width: 100px; display: flex; flex-direction: column; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; pointer-events: none; opacity: 0.15; transition: all 0.3s ease; }
         .vote-card.ready { pointer-events: auto; opacity: 1; }
-
-        /* 緊湊座標 */
-        .pos1 { top: 0px; left: 110px; }
-        .pos2 { top: 60px; left: 215px; }
-        .pos6 { top: 60px; left: 5px; }
-        .pos3 { top: 230px; left: 215px; }
-        .pos5 { top: 230px; left: 5px; }
-        .pos4 { bottom: 10px; left: 110px; }
-
-        .emotion-img {
-            width: 85px;
-            height: 85px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 3px solid #444;
-            background: #333;
-            transition: all 0.2s;
-        }
-
-        .vote-card.selected .emotion-img {
-            border-color: #FFF;
-            transform: scale(1.15);
-            box-shadow: 0 0 15px #F1C40F;
-        }
-
-        .dynamic-text {
-            font-size: 20px; 
-            font-weight: bold;
-            margin-top: 8px;
-            height: 26px; 
-            text-shadow: 2px 2px 4px black;
-        }
-
-        /* 指定文字顏色 */
+        .pos1 { top: 0px; left: 110px; } .pos2 { top: 60px; left: 215px; } .pos6 { top: 60px; left: 5px; }
+        .pos3 { top: 230px; left: 215px; } .pos5 { top: 230px; left: 5px; } .pos4 { bottom: 10px; left: 110px; }
+        .emotion-img { width: 85px; height: 85px; object-fit: cover; border-radius: 50%; border: 3px solid #444; background: #333; transition: all 0.2s; }
+        .vote-card.selected .emotion-img { border-color: #FFF; transform: scale(1.15); box-shadow: 0 0 15px #F1C40F; }
+        .dynamic-text { font-size: 20px; font-weight: bold; margin-top: 8px; height: 26px; text-shadow: 2px 2px 4px black; }
         #t0 { color: #A569BD; } #t1 { color: #EC7063; } #t2 { color: #85C1E9; } 
         #t3 { color: #52BE80; } #t4 { color: #F5B7B1; } #t5 { color: #D4AC0D; } 
-        
-        /* 確定送出按鈕 */
-        #submit-btn {
-            margin: 20px auto;
-            padding: 12px 50px;
-            font-size: 24px;
-            font-weight: bold;
-            background: #27AE60;
-            color: white;
-            border: none;
-            border-radius: 40px;
-            cursor: pointer;
-            display: none; 
-            box-shadow: 0 6px 0 #196F3D;
-        }
+        #submit-btn { margin: 20px auto; padding: 12px 50px; font-size: 24px; font-weight: bold; background: #27AE60; color: white; border: none; border-radius: 40px; cursor: pointer; display: none; box-shadow: 0 6px 0 #196F3D; }
         #submit-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #196F3D; }
-
         #msg { font-size: 1.2rem; font-weight: bold; margin-top: 10px; line-height: 1.5; min-height: 3em; }
         .highlight { color: #F1C40F; }
     </style>
@@ -131,8 +37,7 @@
         <button class="group-btn" onclick="selectGroup(5, this)">第5隊</button>
         <button class="group-btn" onclick="selectGroup(6, this)">第6隊</button>
     </div>
-
-    <div class="hexagon-container" id="main-grid">
+    <div class="hexagon-container">
         <div class="vote-card pos1" onclick="selectEmotion('①', this)"><img src="fig1.jpg" class="emotion-img"><div id="t0" class="dynamic-text"></div></div>
         <div class="vote-card pos2" onclick="selectEmotion('②', this)"><img src="fig2.jpg" class="emotion-img"><div id="t1" class="dynamic-text"></div></div>
         <div class="vote-card pos3" onclick="selectEmotion('③', this)"><img src="fig3.jpg" class="emotion-img"><div id="t2" class="dynamic-text"></div></div>
@@ -140,57 +45,31 @@
         <div class="vote-card pos5" onclick="selectEmotion('⑤', this)"><img src="fig5.jpg" class="emotion-img"><div id="t4" class="dynamic-text"></div></div>
         <div class="vote-card pos6" onclick="selectEmotion('⑥', this)"><img src="fig6.jpg" class="emotion-img"><div id="t5" class="dynamic-text"></div></div>
     </div>
-
     <button id="submit-btn" onclick="finalSubmit()">確定送出</button>
     <p id="msg"></p>
 
     <script>
-        // 設定 Ably
-        const ABLY_KEY = 'bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE';
-        const ably = new Ably.Realtime(ABLY_KEY);
+        const ably = new Ably.Realtime('bHcXGQ.1E5LxA:MTgbAhdb5kDHqeL91xshPWSuAqZihv_SMGB0693bBZE');
         const channel = ably.channels.get('emotion-voting');
-        
-        let currentGroup = null;      // 存隊別 (1~6)
-        let currentChoice = null;     // 存圖號 (①~⑥)
-        let currentEmotionText = "";  // 存中文情緒詞
-        let hasEmotions = false;      // 判斷 Python 文字是否到達
+        let currentGroup = null, currentChoice = null, currentEmotionText = "", hasEmotions = false;
 
-        // 1. 選隊別
         function selectGroup(num, btn) {
             currentGroup = num;
             document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            const msgEl = document.getElementById('msg');
-            msgEl.style.color = "white";
-            msgEl.innerHTML = "你是 <span class='highlight'>第 " + num + " 隊</span><br>" + 
-                              (hasEmotions ? "請點擊圖片選擇情緒" : "等待老師出題中...");
+            document.getElementById('msg').innerHTML = "你是 <span class='highlight'>第 " + num + " 隊</span><br>" + (hasEmotions ? "請點擊圖片選擇情緒" : "等待老師出題中...");
             checkReady();
         }
 
-        // 接收 Python 更新文字 (出口：update_labels)
         channel.subscribe('update_labels', (msg) => {
-            const dataList = msg.data.data;
-            hasEmotions = true; 
-            dataList.forEach(item => {
-                const el = document.getElementById(`t${item.index}`);
-                if (el) el.innerText = item.emotion;
-            });
-
-            // 抽題時重置學生端選擇狀態
-            currentChoice = null;
-            currentEmotionText = "";
+            hasEmotions = true;
+            msg.data.data.forEach(item => { document.getElementById(`t${item.index}`).innerText = item.emotion; });
             document.querySelectorAll('.vote-card').forEach(v => v.classList.remove('selected'));
             document.getElementById('submit-btn').style.display = "none";
-            
-            const msgEl = document.getElementById('msg');
-            msgEl.style.color = "white";
-            msgEl.innerText = "新題目已更新！請選擇圖片";
-            
-            checkReady(); 
+            document.getElementById('msg').innerText = "新題目已更新！請選擇圖片";
+            checkReady();
         });
 
-        // 檢查解鎖條件
         function checkReady() {
             if (currentGroup && hasEmotions) {
                 document.querySelectorAll('.vote-card').forEach(card => card.classList.add('ready'));
@@ -198,51 +77,27 @@
             }
         }
 
-        // 2. 選擇圖片
         function selectEmotion(choice, element) {
             currentChoice = choice;
             currentEmotionText = element.querySelector('.dynamic-text').innerText;
-            
             document.querySelectorAll('.vote-card').forEach(v => v.classList.remove('selected'));
             element.classList.add('selected');
-            
-            const msgEl = document.getElementById('msg');
-            msgEl.style.color = "white";
             document.getElementById('submit-btn').style.display = "block";
-            msgEl.innerHTML = "第 <span class='highlight'>" + currentGroup + " 隊</span> 選擇：<span class='highlight'>" + currentEmotionText + "</span>";
+            document.getElementById('msg').innerHTML = "第 <span class='highlight'>" + currentGroup + " 隊</span> 選擇：<span class='highlight'>" + currentEmotionText + "</span>";
         }
 
-        // 3. 確定送出 (出口：將資料包傳回 Python)
         function finalSubmit() {
-            const msgEl = document.getElementById('msg');
             const subBtn = document.getElementById('submit-btn');
             subBtn.disabled = true;
-            
-            // 這就是你要傳回給 Python 的完整資料包
-            const payload = {
-                group: currentGroup,
-                choice: currentChoice,
-                emotion: currentEmotionText
-            };
-
-            msgEl.style.color = "white";
-            msgEl.innerHTML = "第 " + currentGroup + " 隊「" + currentEmotionText + "」<br>正在傳送...";
-
-            channel.publish('update', payload, (err) => {
-                if (err) {
-                    msgEl.innerText = "❌ 傳送失敗，請檢查網路";
-                    msgEl.style.color = "#FF5252";
-                    subBtn.disabled = false;
-                } else {
-                    msgEl.innerHTML = "✅ 第 <span class='highlight'>" + currentGroup + " 隊</span><br>「<span class='highlight'>" + currentEmotionText + "</span>」已送出成功！";
-                    msgEl.style.color = "#4CAF50";
+            // 回傳資料出口：包含隊別、符號、情緒字
+            channel.publish('update', { group: currentGroup, choice: currentChoice, emotion: currentEmotionText }, (err) => {
+                if (!err) {
+                    document.getElementById('msg').innerHTML = "✅ 第 <span class='highlight'>" + currentGroup + " 隊</span><br>「<span class='highlight'>" + currentEmotionText + "</span>」送出成功！";
                     subBtn.style.display = "none";
-                    subBtn.disabled = false;
-                    
-                    // 投票後鎖定，等待下一輪文字更新
                     document.querySelectorAll('.vote-card').forEach(v => v.classList.remove('ready'));
-                    hasEmotions = false; 
+                    hasEmotions = false;
                 }
+                subBtn.disabled = false;
             });
         }
     </script>
