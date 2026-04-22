@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情緒投票系統</title>
+    <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+        button { height: 100px; font-size: 24px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; }
+        .btn1 { background: #FF5252; } .btn2 { background: #FF9800; }
+        .btn3 { background: #FFEB3B; color: black; } .btn4 { background: #4CAF50; }
+        .btn5 { background: #2196F3; } .btn6 { background: #9C27B0; }
+    </style>
+</head>
+<body>
+    <h2>請選擇你認為最符合的情緒</h2>
+    <div class="grid">
+        <button class="btn1" onclick="vote('①')">①</button>
+        <button class="btn2" onclick="vote('②')">②</button>
+        <button class="btn3" onclick="vote('③')">③</button>
+        <button class="btn4" onclick="vote('④')">④</button>
+        <button class="btn5" onclick="vote('⑤')">⑤</button>
+        <button class="btn6" onclick="vote('⑥')">⑥</button>
+    </div>
+    <p id="msg"></p>
+
+    <script>
+        // 請將此處換成你的 Ably API Key
+        const ably = new Ably.Realtime('YOUR_ABLY_API_KEY_HERE');
+        const channel = ably.channels.get('emotion-voting');
+
+        function vote(choice) {
+            channel.publish('update', { choice: choice });
+            document.getElementById('msg').innerText = "投票成功！你選了 " + choice;
+            // 點擊後暫時禁用按鈕，防止連續刷票
+            const btns = document.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+            setTimeout(() => {
+                btns.forEach(b => b.disabled = false);
+                document.getElementById('msg').innerText = "";
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
