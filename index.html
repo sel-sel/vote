@@ -119,12 +119,12 @@
 <body>
     <h2 id="main-hint">1. 請先點選隊別</h2>
     <div class="group-selector">
-        <button class="group-btn" onclick="selectGroup(1, this)">1隊</button>
-        <button class="group-btn" onclick="selectGroup(2, this)">2隊</button>
-        <button class="group-btn" onclick="selectGroup(3, this)">3隊</button>
-        <button class="group-btn" onclick="selectGroup(4, this)">4隊</button>
-        <button class="group-btn" onclick="selectGroup(5, this)">5隊</button>
-        <button class="group-btn" onclick="selectGroup(6, this)">6隊</button>
+        <button class="group-btn" onclick="selectGroup(1, this)">第1隊</button>
+        <button class="group-btn" onclick="selectGroup(2, this)">第2隊</button>
+        <button class="group-btn" onclick="selectGroup(3, this)">第3隊</button>
+        <button class="group-btn" onclick="selectGroup(4, this)">第4隊</button>
+        <button class="group-btn" onclick="selectGroup(5, this)">第5隊</button>
+        <button class="group-btn" onclick="selectGroup(6, this)">第6隊</button>
     </div>
 
     <div class="hexagon-container" id="main-grid">
@@ -154,7 +154,7 @@
             document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             checkReady();
-            document.getElementById('msg').innerHTML = "你是 <span class='highlight'>" + num + " 隊</span><br>等待文字傳送，再請點擊選擇圖片情緒";
+            document.getElementById('msg').innerHTML = "你是第 <span class='highlight'>" + num + " 隊</span><br>等待文字傳送，再請點擊選擇圖片情緒";
         }
 
         channel.subscribe('update_labels', (msg) => {
