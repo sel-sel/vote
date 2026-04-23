@@ -2,132 +2,63 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>職場演練 - 學生投票系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>職場演練投票系統</title>
     <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
     <style>
-        body {
-            font-family: "微軟正黑體", sans-serif;
-            background-color: #1a1a1a;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
-        }
+        body { font-family: "微軟正黑體", sans-serif; background-color: #222; color: white; text-align: center; margin: 0; padding: 10px; }
+        
+        /* 保持您原本的圖片容器 */
+        .fig-container { position: relative; width: 350px; height: 350px; margin: 20px auto; }
+        .fig-img { width: 100%; height: 100%; object-fit: contain; }
 
-        h2 { margin-bottom: 10px; color: #4CAF50; }
-
-        /* 狀態提示框 */
-        #status-container {
-            width: 90%;
-            max-width: 400px;
-            background: #333;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid #555;
-        }
-        #status-label {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #aaa;
+        /* 狀態顯示區 - 這是新添加的文字提示 */
+        #status-bar { 
+            background: #444; padding: 10px; margin: 10px auto; width: 90%; 
+            border-radius: 5px; font-weight: bold; color: #00FF00;
         }
 
         /* 隊伍選擇區 */
-        .group-select {
-            margin-bottom: 20px;
-            background: #2c3e50;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        select {
-            font-size: 1.1rem;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
+        .group-box { margin: 15px; font-size: 18px; }
+        select { font-size: 18px; padding: 5px; }
 
-        /* 按鈕網格：順時鐘排列 */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            width: 100%;
-            max-width: 400px;
+        /* 按鈕佈局 - 保持您原本的樣式 */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 90%; margin: 0 auto; }
+        .vote-btn { 
+            padding: 20px; font-size: 20px; font-weight: bold; border-radius: 10px; 
+            border: none; background-color: #555; color: white; cursor: pointer;
         }
-
-        .emotion-btn {
-            height: 100px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: white;
-            background-color: #444;
-            border: 2px solid #666;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .emotion-btn:active { transform: scale(0.95); }
-        .emotion-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .vote-btn:active { background-color: #2196F3; }
+        .vote-btn:disabled { background-color: #333; color: #777; }
         
-        /* 點選後的顏色 */
-        .selected {
-            background-color: #2196F3 !important;
-            border-color: #fff !important;
-            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
-        }
-
-        .btn-num { font-size: 0.9rem; color: #bbb; margin-bottom: 5px; }
+        .selected { background-color: #2196F3 !important; border: 2px solid white; }
     </style>
 </head>
 <body>
 
-    <h2>🗳️ 情緒投票</h2>
+    <h2>職場演練投票</h2>
 
-    <div class="group-select">
-        <label>我是第 </label>
-        <select id="group-id">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-        </select>
-        <label> 隊</label>
+    <div class="group-box">
+        我是第 <select id="group-id">
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
+        </select> 隊
     </div>
 
-    <div id="status-container">
-        <div id="status-label">等待老師抽題中...</div>
+    <div id="status-bar" id="msg-display">請等待老師抽題...</div>
+
+    <div class="fig-container">
+        <img src="hexagon_base.png" class="fig-img" alt="情緒圖卡">
     </div>
 
-    <div class="grid-container">
-        <button class="emotion-btn" id="btn-0" onclick="vote(0)" disabled>
-            <span class="btn-num">① 正上</span><span class="text">---</span>
-        </button>
-        <button class="emotion-btn" id="btn-1" onclick="vote(1)" disabled>
-            <span class="btn-num">② 右上</span><span class="text">---</span>
-        </button>
-        <button class="emotion-btn" id="btn-5" onclick="vote(5)" disabled>
-            <span class="btn-num">⑥ 左上</span><span class="text">---</span>
-        </button>
-        <button class="emotion-btn" id="btn-2" onclick="vote(2)" disabled>
-            <span class="btn-num">③ 右下</span><span class="text">---</span>
-        </button>
-        <button class="emotion-btn" id="btn-4" onclick="vote(4)" disabled>
-            <span class="btn-num">⑤ 左下</span><span class="text">---</span>
-        </button>
-        <button class="emotion-btn" id="btn-3" onclick="vote(3)" disabled>
-            <span class="btn-num">④ 正下</span><span class="text">---</span>
-        </button>
+    <div class="btn-grid">
+        <button id="btn-0" class="vote-btn" onclick="sendVote(0)" disabled>① ---</button>
+        <button id="btn-1" class="vote-btn" onclick="sendVote(1)" disabled>② ---</button>
+        <button id="btn-5" class="vote-btn" onclick="sendVote(5)" disabled>⑥ ---</button>
+        <button id="btn-2" class="vote-btn" onclick="sendVote(2)" disabled>③ ---</button>
+        <button id="btn-4" class="vote-btn" onclick="sendVote(4)" disabled>⑤ ---</button>
+        <button id="btn-3" class="vote-btn" onclick="sendVote(3)" disabled>④ ---</button>
     </div>
 
     <script>
@@ -135,57 +66,48 @@
         const ably = new Ably.Realtime(ABLY_KEY);
         const channel = ably.channels.get('emotion-voting');
 
+        let emotions = [];
         let hasVoted = false;
-        let currentEmotions = [];
 
-        // --- 接收 Python 端抽題訊號 ---
+        // 接收抽題訊號
         channel.subscribe('update_labels', (message) => {
-            const data = message.data.data; // 這是 Python 傳來的列表
-            currentEmotions = data;
+            emotions = message.data.data;
+            
+            // 【修正重點】變更文字為「已重新抽題」
+            const statusBar = document.getElementById('status-bar');
+            statusBar.innerText = "✨ 已重新抽題！請點選情緒";
+            statusBar.style.color = "#FFD700"; // 金色提示
 
-            // 1. 更新狀態文字：已重新抽題
-            const statusLabel = document.getElementById('status-label');
-            statusLabel.innerText = "✅ 已重新抽題！請點選";
-            statusLabel.style.color = "#FFD700"; // 金色
-
-            // 2. 更新按鈕文字
-            data.forEach(item => {
+            // 更新按鈕文字並啟用
+            emotions.forEach(item => {
                 const btn = document.getElementById(`btn-${item.index}`);
                 if (btn) {
-                    const textSpan = btn.querySelector('.text');
-                    textSpan.innerText = item.emotion;
+                    btn.innerText = getLabel(item.index) + " " + item.emotion;
                     btn.disabled = false;
-                    btn.classList.remove('selected'); // 清除上次點選狀態
+                    btn.classList.remove('selected');
                 }
             });
-
-            hasVoted = false; // 開放本輪投票
-            console.log("接收到新題目");
+            hasVoted = false;
         });
 
-        // --- 投票功能 ---
-        function vote(index) {
-            if (hasVoted) {
-                alert("本輪已投過票囉！請等老師重新抽題。");
-                return;
-            }
+        function getLabel(idx) {
+            return ["①", "②", "③", "④", "⑤", "⑥"][idx];
+        }
 
+        function sendVote(idx) {
+            if (hasVoted) return;
             const groupId = document.getElementById('group-id').value;
-            const emotionText = currentEmotions[index].emotion;
-            const labels = ["①", "②", "③", "④", "⑤", "⑥"];
-
-            // 傳送投票給 Python
+            
             channel.publish('update', {
-                choice: labels[index],
+                choice: getLabel(idx),
                 group: groupId,
-                emotion: emotionText
+                emotion: emotions[idx].emotion
             });
 
-            // 介面回饋
             hasVoted = true;
-            document.getElementById(`btn-${index}`).classList.add('selected');
-            document.getElementById('status-label').innerText = "投票完成，等待下一題";
-            document.getElementById('status-label').style.color = "#4CAF50";
+            document.getElementById(`btn-${idx}`).classList.add('selected');
+            document.getElementById('status-bar').innerText = "投票完成，請觀察大螢幕";
+            document.getElementById('status-bar').style.color = "#4CAF50";
         }
     </script>
 </body>
